@@ -280,21 +280,32 @@ def make_VphiRun(
 # Streamlit App Configuration & Layout
 # ============================================================
 
-# Set layout to "wide" so it uses landscape proportions for Canva slides
 st.set_page_config(page_title="Effective Potential Plot", layout="wide")
 
-# Hide default Streamlit header/footer and reduce padding
+# Custom CSS: Force columns side-by-side & eliminate margins
 st.markdown(
     """
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    
     .block-container {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    
+    /* Prevent Streamlit from stacking columns vertically in narrow windows */
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    div[data-testid="stColumn"] {
+        min-width: 0px !important;
     }
     </style>
 """,
@@ -307,12 +318,12 @@ plt.rcParams.update(
         "text.usetex": False,
         "font.family": "serif",
         "mathtext.fontset": "cm",
-        "font.size": 16,
+        "font.size": 14,
     }
 )
 
-# --- Side-by-Side Main Layout (Plot on Left, Sliders on Right) ---
-col_plot, col_sliders = st.columns([2.2, 1.0])
+# --- Side-by-Side Main Layout (Plot Left, Sliders Right) ---
+col_plot, col_sliders = st.columns([1.6, 1.0])
 
 # --- Sliders (Right Column) ---
 with col_sliders:
@@ -346,19 +357,19 @@ phi_vals = np.linspace(0, 2, 500)
 V_func = make_VphiRun(g0=g0_var, y0=y0_var, lam0=0)
 V_vals = np.array([V_func(phi, T=T_val) for phi in phi_vals])
 
-fig, ax = plt.subplots(figsize=(7, 5))
+fig, ax = plt.subplots(figsize=(5.5, 4.2))
 
 ax.plot(
     phi_vals,
     V_vals,
     color="#3F889E",
-    lw=4.5,
+    lw=4.0,
     label=rf"$T={T_val:.2f}\ \mu_0,\ g_0={g0_var:.2f},\ y_0={y0_var:.2f}$",
 )
 
 ax.axhline(y=0, color="grey", linestyle=":", linewidth=1.5, alpha=0.7)
-ax.set_xlabel(r"$\phi$", fontsize=20, labelpad=6)
-ax.set_ylabel(r"$V(\phi)$", fontsize=20, labelpad=6)
+ax.set_xlabel(r"$\phi$", fontsize=18, labelpad=4)
+ax.set_ylabel(r"$V(\phi)$", fontsize=18, labelpad=4)
 ax.set_xticks([])
 ax.set_yticks([])
 ax.set_xlim(phi_vals[0], phi_vals[-1])
@@ -369,7 +380,7 @@ margin = max(abs(v_min), abs(v_max), 0.001) * 0.25
 ax.set_ylim(v_min - margin, v_max + margin)
 
 ax.legend(
-    loc="upper left", frameon=True, facecolor="white", edgecolor="none", fontsize=15
+    loc="upper left", frameon=True, facecolor="white", edgecolor="none", fontsize=12
 )
 
 # --- Display Plot (Left Column) ---
