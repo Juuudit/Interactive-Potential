@@ -305,7 +305,6 @@ plt.rcParams.update(
     }
 )
 
-st.title("Interactive Effective Potential")
 
 # --- Interactive Sliders ---
 col1, col2, col3 = st.columns(3)
