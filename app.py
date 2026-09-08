@@ -280,16 +280,22 @@ def make_VphiRun(
 # Streamlit App Configuration & Layout
 # ============================================================
 
-st.set_page_config(page_title="Effective Potential Plot", layout="centered")
+# Set layout to "wide" so it uses landscape proportions for Canva slides
+st.set_page_config(page_title="Effective Potential Plot", layout="wide")
 
-# Hide default Streamlit header/footer
+# Hide default Streamlit header/footer and reduce padding
 st.markdown(
     """
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    .block-container {padding-top: 1rem; padding-bottom: 1rem;}
+    .block-container {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -305,11 +311,11 @@ plt.rcParams.update(
     }
 )
 
+# --- Side-by-Side Main Layout (Plot on Left, Sliders on Right) ---
+col_plot, col_sliders = st.columns([2.2, 1.0])
 
-# --- Interactive Sliders ---
-col1, col2, col3 = st.columns(3)
-
-with col1:
+# --- Sliders (Right Column) ---
+with col_sliders:
     T_val = st.slider(
         label=r"Temperature ($T$)",
         min_value=0.01,
@@ -318,7 +324,6 @@ with col1:
         step=0.01,
     )
 
-with col2:
     g0_var = st.slider(
         label=r"Gauge coupling ($g_0$)",
         min_value=0.00,
@@ -327,7 +332,6 @@ with col2:
         step=0.05,
     )
 
-with col3:
     y0_var = st.slider(
         label=r"Yukawa coupling ($y_0$)",
         min_value=0.00,
@@ -342,31 +346,32 @@ phi_vals = np.linspace(0, 2, 500)
 V_func = make_VphiRun(g0=g0_var, y0=y0_var, lam0=0)
 V_vals = np.array([V_func(phi, T=T_val) for phi in phi_vals])
 
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(7, 5))
 
 ax.plot(
     phi_vals,
     V_vals,
     color="#3F889E",
     lw=4.5,
-    label=rf"$T={T_val:.2f}\mu_0,\ g_0={g0_var:.2f},\ y_0={y0_var:.2f}$",
+    label=rf"$T={T_val:.2f}\ \mu_0,\ g_0={g0_var:.2f},\ y_0={y0_var:.2f}$",
 )
 
 ax.axhline(y=0, color="grey", linestyle=":", linewidth=1.5, alpha=0.7)
-ax.set_xlabel(r"$\phi$", fontsize=22, labelpad=8)
-ax.set_ylabel(r"$V(\phi)$", fontsize=22, labelpad=8)  # Fixed typo here
+ax.set_xlabel(r"$\phi$", fontsize=20, labelpad=6)
+ax.set_ylabel(r"$V(\phi)$", fontsize=20, labelpad=6)
 ax.set_xticks([])
 ax.set_yticks([])
 ax.set_xlim(phi_vals[0], phi_vals[-1])
 
-# Dynamic y-axis scaling to accommodate shape changes gracefully
+# Dynamic y-axis scaling
 v_min, v_max = np.min(V_vals), np.max(V_vals)
 margin = max(abs(v_min), abs(v_max), 0.001) * 0.25
 ax.set_ylim(v_min - margin, v_max + margin)
 
 ax.legend(
-    loc="upper left", frameon=True, facecolor="white", edgecolor="none", fontsize=18
+    loc="upper left", frameon=True, facecolor="white", edgecolor="none", fontsize=15
 )
 
-# Display plot in Streamlit
-st.pyplot(fig)
+# --- Display Plot (Left Column) ---
+with col_plot:
+    st.pyplot(fig, use_container_width=True)
